@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -e "\033[1;32m[*]\033[0m Installing Deauther by Dx4 & JonX..."
+echo -e "\033[1;32m[*]\033[0m Installing Deauther-S by Dx4 & JonX..."
 
 # Cek user root
 if [[ $EUID -ne 0 ]]; then
@@ -29,7 +29,7 @@ fi
 SCRIPT_PATH="$(realpath deauth.py)"
 
 # Buat shortcut command di /usr/local/bin
-ln -sf "$SCRIPT_PATH" /usr/local/bin/deauther
+ln -sf "$SCRIPT_PATH" /usr/local/bin/deauther-s
 chmod +x "$SCRIPT_PATH"
 
 echo -e "\033[1;32m[+]\033[0m Installation complete!"

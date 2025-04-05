@@ -41,7 +41,7 @@ sudo ./install.sh
 
 The installer will:
 - Check and verify dependencies
-- Copy the main script to `/usr/local/bin` as `deauther`
+- Copy the main script to `/usr/local/bin` as `deauther-s`
 - Make it globally executable from the terminal
 
 ---

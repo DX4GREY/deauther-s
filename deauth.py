@@ -23,7 +23,7 @@ def check_dependencies():
 def print_banner():
     print(f"""{Fore.GREEN}
   ==========================================
-     {Style.BRIGHT}DEAUTHER{Style.NORMAL} by Dx4 & JonX
+     {Style.BRIGHT}DEAUTHER-S{Style.NORMAL} by Dx4 & JonX
   ==========================================
     """)
 
