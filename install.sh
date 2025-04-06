@@ -9,7 +9,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Daftar dependencies
-REQUIRED_CMDS=("iw" "aireplay-ng" "ip" "python3" "pip3")
+REQUIRED_CMDS=("iw" "aircrack-ng" "iproute2" "python3" "python3-pip")
 
 # Install missing system dependencies
 for cmd in "${REQUIRED_CMDS[@]}"; do
