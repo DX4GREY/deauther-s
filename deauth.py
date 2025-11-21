@@ -21,6 +21,15 @@ def check_superuser():
         sys.exit(1)
     return True
 
+def cleanup_tmp_files():
+    tmp_files = [f for f in os.listdir("/tmp") if f.startswith("deauther")]
+    for f in tmp_files:
+        try:
+            print(f"{Fore.GREEN}[+] {Fore.WHITE}removeing temporary file: /tmp/{f}")
+            os.remove(os.path.join("/tmp", f))
+        except:
+            pass
+
 def validate_interface(iface):
     try:
         subprocess.run(["iw", iface, "info"], check=True, 
@@ -198,6 +207,7 @@ def interactive_choose(aps):
 def main():
     parser = argparse.ArgumentParser(description="Simple Deauth Tool by Dx4 and JonX")
     parser.add_argument("-i", "--iface", help="Wireless interface (ex: wlan0)")
+    parser.add_argument("--cleanup", action="store_true", help="Cleanup temporary files and exit")
     parser.add_argument("--uninstall", action="store_true", help="Uninstall the deauther shortcut")
     args = parser.parse_args()
 
@@ -207,6 +217,10 @@ def main():
     print_banner()
     check_superuser()
     check_dependencies()
+    
+    if args.cleanup:
+        cleanup_tmp_files()
+        sys.exit(0)
 
     if not args.iface:
         parser.print_help()
