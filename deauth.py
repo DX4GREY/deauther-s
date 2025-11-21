@@ -106,11 +106,18 @@ def start_deauth(bssid, channel, iface):
     else:
         err("[!] Invalid choice." + Style.RESET_ALL)
         return
-    
+    # Print information and set channel
+    print(f"\n{Fore.CYAN}{Style.BRIGHT}----- Information -----{Style.NORMAL}")
+    info(f"Using tool       : {tool}")
+    info(f"Target BSSID     : {bssid}")
+    info(f"Target Channel   : {channel}")
+    info(f"Interface        : {iface}")
+    print()
+
     info(f"Setting channel {channel} on interface {iface}...")
     set_channel(iface, channel)
 
-    info(f"Attacking {bssid} using interface {iface} with {tool}...")
+    info(f"Attacking...")
     info(f"Press CTRL+C to stop the attack...")
 
     cmd = [
