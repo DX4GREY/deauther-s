@@ -22,14 +22,14 @@ cd "$TMP_DIR" || exit
 
 echo -e "\033[1;34m[*]\033[0m Running installer..."
 
-# Jalankan installer & tangkap output pilihan user
-INSTALL_LOG="/tmp/deauther-install-log"
-bash install.sh | tee "$INSTALL_LOG"
+# Jalankan installer
+INSTALL_PATH="/usr/local/bin/deauther-s"
+bash install.sh
 
 # Deteksi apakah user memilih symlink atau copy
-if grep -q "Symlink" "$INSTALL_LOG"; then
+if [[ -L $INSTALL_PATH ]]; then
     METHOD="symlink"
-elif grep -q "Copying script" "$INSTALL_LOG"; then
+elif [[ -f $INSTALL_PATH ]]; then
     METHOD="copy"
 else
     METHOD="unknown"
