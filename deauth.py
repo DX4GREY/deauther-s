@@ -12,7 +12,7 @@ from colorama import Fore, Style, init
 init(autoreset=True)
 
 REQUIRED_CMDS = ["iw", "aireplay-ng", "ip", "mdk4", "xterm"]
-SHORTCUT_PATH = "/usr/local/bin/deauther"
+SHORTCUT_PATH = "/usr/local/bin/deauther-s"
 
 def check_superuser():
     """Return True if running as root, otherwise exit program."""
