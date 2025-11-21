@@ -15,11 +15,11 @@ Runs inside `xterm` with interactive menus for easy usage.
   * `aireplay-ng` (classic, stable)
   * `mdk4` (strong, aggressive)
 * 🖥️ **Attacks run inside xterm** (colored output + auto-close)
-* 🚀 **Globally accessible** via `deauther` command
+* 🚀 **Globally accessible** via `deauther-s` command
 * 🧹 **Includes easy uninstaller:**
 
   ```bash
-  sudo deauther --uninstall
+  sudo deauther-s --uninstall
   ```
 
 ---
