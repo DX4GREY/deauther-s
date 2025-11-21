@@ -1,4 +1,4 @@
-## **DEAUTHER by Dx4 & JonX**
+## **DEAUTHER-s by Dx4 & JonX**
 
 A Python-based WiFi **Deauthentication Attack Tool** with automatic scanning, AP selection, and support for multiple attack engines.
 Runs inside `xterm` with interactive menus for easy usage.
@@ -81,7 +81,7 @@ Installer will:
 ### **Basic**
 
 ```bash
-sudo deauther -i wlan0
+sudo deauther-s -i wlan0
 ```
 
 This will:
@@ -114,10 +114,10 @@ Choose **1** or **2** depending on your needs.
 To remove the installed shortcut:
 
 ```bash
-sudo deauther --uninstall
+sudo deauther-s --uninstall
 ```
 
-This only removes `/usr/local/bin/deauther`
+This only removes `/usr/local/bin/deauther-s`
 (not the repository nor dependencies).
 
 ---
