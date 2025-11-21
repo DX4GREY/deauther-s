@@ -122,7 +122,7 @@ def start_deauth(bssid, channel, iface):
 
     cmd = [
         "xterm",
-        "-geometry", "80x24-0-0",
+        "-geometry", "100x24-0-0",
         "-fg", "red",
         "-bg", "black",
         "-e", "bash", "-lc",
