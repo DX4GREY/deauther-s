@@ -11,7 +11,7 @@ from colorama import Fore, Style, init
 
 init(autoreset=True)
 
-REQUIRED_CMDS = ["iw", "aireplay-ng", "ip"]
+REQUIRED_CMDS = ["iw", "aireplay-ng", "ip", "mdk4", "xterm"]
 SHORTCUT_PATH = "/usr/local/bin/deauther"
 
 def check_superuser():
