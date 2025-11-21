@@ -29,11 +29,14 @@ def check_dependencies():
         exit(1)
 
 def print_banner():
-    print(f"""{Fore.GREEN}
-  ==========================================
-     {Style.BRIGHT}DEAUTHER-S{Style.NORMAL} by Dx4 & JonX
-  ==========================================
-    """)
+    print(Fore.RED + Style.BRIGHT + rf"""
+    ▛▀▖ {Fore.RESET}Scanner{Fore.RED} ▐  ▌   {Fore.RESET}With{Fore.REDSS}    ▞▀▖
+    ▌ ▌▞▀▖▝▀▖▌ ▌▜▀ ▛▀▖▞▀▖▙▀▖▄▄▖▚▄ 
+    ▌ ▌▛▀ ▞▀▌▌ ▌▐ ▖▌ ▌▛▀ ▌     ▖ ▌
+    ▀▀ ▝▀▘▝▀▘▝▀▘ ▀ ▘ ▘▝▀▘▘     ▝▀ 
+{Fore.RESET}      Deauther-S | Dx4 and JonX
+""" + Style.RESET_ALL)
+
 
 def uninstall_script():
     print_banner()
