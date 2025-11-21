@@ -64,9 +64,7 @@ sudo ./install.sh
 **One-line installer:**
 
 ```
-curl -sSL https://raw.githubusercontent.com/DX4GREY/deauther-s/master/oneinstall.sh -o /tmp/deauther-one.sh \
-&& sudo bash /tmp/deauther-one.sh \
-&& rm /tmp/deauther-one.sh
+curl -sSL https://raw.githubusercontent.com/DX4GREY/deauther-s/master/oneinstall.sh -o /tmp/deauther-one.sh && sudo bash /tmp/deauther-one.sh && rm /tmp/deauther-one.sh
 ```
 
 Installer will:
