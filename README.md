@@ -1,72 +1,120 @@
-## **DEAUTHER-S by Dx4 & JonX**
+## **DEAUTHER by Dx4 & JonX**
 
-A simple Python tool for performing **WiFi Deauthentication Attacks** using `aireplay-ng`.  
-Supports interfaces with packet injection and monitor mode capabilities.
-
----
-
-### **Features**
-- Automatically detects the channel of the target BSSID  
-- Automatically switches the interface to monitor mode  
-- Continuous deauth attack until user stops (CTRL+C)  
-- Can be run from anywhere via `deauther-s` command  
-- Includes uninstall option: `deauther-s --uninstall`
+A Python-based WiFi **Deauthentication Attack Tool** with automatic scanning, AP selection, and support for multiple attack engines.
+Runs inside `xterm` with interactive menus for easy usage.
 
 ---
 
-### **Dependencies**
+## ⭐ **Features**
+
+* 🔍 **Automatic WiFi scanning** using `airodump-ng`
+* 📡 **Interactive AP selection** (shows BSSID, RSSI, channel, SSID)
+* 🔄 **Automatic channel setting** for selected target
+* ⚙️ **Choose attack engine:**
+
+  * `aireplay-ng` (classic, stable)
+  * `mdk4` (strong, aggressive)
+* 🖥️ **Attacks run inside xterm** (colored output + auto-close)
+* 🚀 **Globally accessible** via `deauther` command
+* 🧹 **Includes easy uninstaller:**
+
+  ```bash
+  sudo deauther --uninstall
+  ```
+
+---
+
+## 📦 **Dependencies**
+
 Required tools:
-- `iw`
-- `aireplay-ng` (from `aircrack-ng`)
-- `ip`
 
-To install dependencies:
+* `iw`
+* `ip`
+* `xterm`
+* `aireplay-ng`
+* `airodump-ng`
+* `mdk4`
+
+Install on Debian/Ubuntu/Kali:
+
 ```bash
-sudo apt install aircrack-ng wireless-tools iproute2
+sudo apt install aircrack-ng mdk4 xterm wireless-tools iproute2
 ```
 
 ---
 
-### **Installation**
-**1. Clone the repository**
+## 📥 **Installation**
+
+### **1. Clone repository**
+
 ```bash
 git clone https://github.com/DX4GREY/deauther-s
 cd deauther-s
 ```
 
-**2. Run the installer**
+### **2. Run installer**
+
 ```bash
 sudo ./install.sh
 ```
 
-The installer will:
-- Check and verify dependencies
-- Copy the main script to `/usr/local/bin` as `deauther-s`
-- Make it globally executable from the terminal
+Installer will:
+
+* Check and verify required commands
+* Copy main script to `/usr/local/bin/deauther`
+* Make it globally executable
+* Test environment compatibility
 
 ---
 
-### **Usage**
-Example:
+## 🕹️ **Usage**
+
+### **Basic**
+
 ```bash
-sudo deauther-s -i wlan0 -b 00:11:22:33:44:55
+sudo deauther -i wlan0
 ```
 
-- `-i` = Wireless interface (e.g., wlan0)
-- `-b` = Target BSSID (MAC address of the target WiFi)
+This will:
+
+1. Launch **airodump-ng** inside xterm
+2. Save CSV results
+3. Show a **list of detected APs**
+4. Ask you to choose a target
+5. Ask you to choose attack method (aireplay-ng or mdk4)
+6. Launch the attack
 
 ---
 
-### **Uninstall**
-To remove the installed script:
-```bash
-sudo deauther-s --uninstall
+## 🎯 **Attack Method Selection**
+
+You will be prompted with:
+
+```
+----- Select Attack Method -----
+1. aireplay-ng (classic, stable)
+2. mdk4 (stronger, faster, more aggressive)
 ```
 
-This will only remove the script, not the dependencies.
+Choose **1** or **2** depending on your needs.
 
 ---
 
-### **Disclaimer**
-**This tool is intended for educational and authorized testing purposes only. Do not use it on networks you do not own or have permission to test. You are fully responsible for your actions.**
-!
+## ❌ **Uninstallation**
+
+To remove the installed shortcut:
+
+```bash
+sudo deauther --uninstall
+```
+
+This only removes `/usr/local/bin/deauther`
+(not the repository nor dependencies).
+
+---
+
+## ⚠️ **Disclaimer**
+
+This tool is for **educational and authorized security testing only**.
+Do **NOT** attack networks without explicit permission.
+You are fully responsible for your actions.
