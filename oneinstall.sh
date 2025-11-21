@@ -44,6 +44,3 @@ if [[ "$METHOD" == "copy" ]]; then
 else
     echo -e "\033[1;36m[*]\033[0m Keeping folder (symlink mode)."
 fi
-
-echo -e "\033[1;32m[+]\033[0m Done! Run using:"
-echo -e "    \033[1;37msudo deauther -i wlan0\033[0m"

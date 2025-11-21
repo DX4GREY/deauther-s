@@ -58,10 +58,21 @@ cd deauther-s
 sudo ./install.sh
 ```
 
+### 📥 **One-Line Installation**
+
+
+**One-line installer:**
+
+```
+curl -sSL https://raw.githubusercontent.com/DX4GREY/deauther-s/master/oneinstall.sh -o /tmp/deauther-one.sh \
+&& sudo bash /tmp/deauther-one.sh \
+&& rm /tmp/deauther-one.sh
+```
+
 Installer will:
 
 * Check and verify required commands
-* Copy main script to `/usr/local/bin/deauther`
+* Copy main script to `/usr/local/bin/deauther-s`
 * Make it globally executable
 * Test environment compatibility
 
