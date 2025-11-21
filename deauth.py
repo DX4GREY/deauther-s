@@ -21,6 +21,15 @@ def check_superuser():
         sys.exit(1)
     return True
 
+def validate_interface(iface):
+    try:
+        subprocess.run(["iw", iface, "info"], check=True, 
+                      capture_output=True, timeout=5)
+        return True
+    except:
+        print(f"{Fore.RED}[!] {Fore.WHITE}Interface {iface} not found or not in monitor mode")
+        return False
+
 def check_dependencies():
     missing = [cmd for cmd in REQUIRED_CMDS if not shutil.which(cmd)]
     if missing:
@@ -203,8 +212,7 @@ def main():
         parser.print_help()
         return
     
-    if not args.iface:
-        print(f"{Fore.RED}[!] {Fore.WHITE}Interface is required with --scan")
+    if not validate_interface(args.iface):
         return
 
     csv_file = run_airodump_scan(args.iface)
