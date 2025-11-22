@@ -162,6 +162,7 @@ def start_beacon_flood(iface):
 
     cmd = [
         "xterm",
+        "-T", "Beacon Flood",
         "-geometry", "100x24-0-0",
         "-fg", "red",
         "-bg", "black",
@@ -223,6 +224,7 @@ def start_deauth(bssid, channel, iface):
 
     cmd = [
         "xterm",
+        "-T", f"{tool} Deauth Attack",
         "-geometry", "100x24-0-0",
         "-fg", "red",
         "-bg", "black",
@@ -263,7 +265,7 @@ def run_airodump_scan(iface):
         # buka xterm tanpa -hold biar ga nge-freeze quitting
         cmd = f"airodump-ng --write {base} --output-format csv {iface}"
         # buka xterm di pojok kanan bawah (geometry: 100x30, offset negatif) dengan warna teks merah
-        subprocess.run(["xterm", "-geometry", "100x30-0-0", "-e", "bash", "-lc", cmd])
+        subprocess.run(["xterm", "-T", "APs Scan", "-geometry", "100x30-0-0", "-e", "bash", "-lc", cmd])
     except Exception as e:
         err(f"Failed to launch airodump-ng: {e}")
         sys.exit(1)
