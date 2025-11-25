@@ -48,6 +48,7 @@ def set_channel(iface, channel):
     subprocess.run(["iw", iface, "set", "channel", str(channel)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def main():
+    print_banner()
     parser = argparse.ArgumentParser(description="Simple Deauth Tool by Dx4 and JonX")
     parser.add_argument("-h", "--help", action="help", help="Show this help message")
     parser.add_argument("-i", "--iface", help="Wireless interface (ex: wlan0)")
@@ -59,17 +60,12 @@ def main():
     if args.uninstall:
         uninstall_script()
 
-    print_banner()
     check_superuser()
     check_dependencies()
     
     if args.cleanup:
         cleanup_tmp_files()
         sys.exit(0)
-
-    if args.help:
-        parser.print_help()
-        return
 
     if not args.iface:
         parser.print_help()
