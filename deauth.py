@@ -8,7 +8,7 @@ from colorama import Fore, Style, init
 from utils import check_superuser, check_dependencies, validate_interface, cleanup_tmp_files
 from attacks import start_deauth, start_beacon_flood
 from scanner import run_airodump_scan, parse_airodump_csv, interactive_choose
-from variables import SHORTCUT_PATH
+from variables import SHORTCUT_PATH, FOLDER_PATH
 
 init(autoreset=True)
 
@@ -23,15 +23,21 @@ def print_banner():
 
 def uninstall_script():
     print_banner()
-    if os.path.islink(SHORTCUT_PATH):
+    # Uninstall all SHORTCUT_PATH and FOLDER_PATH
+    if os.path.exists(SHORTCUT_PATH) and os.path.exists(FOLDER_PATH):
         try:
             os.remove(SHORTCUT_PATH)
-            ok(f"Uninstalled successfully from {SHORTCUT_PATH}")
+            ok(f"Removed shortcut: {SHORTCUT_PATH}")
         except Exception as e:
-            err(f"Failed to uninstall: {e}")
-    else:
-        warn(f"No installation found at {SHORTCUT_PATH}")
-    sys.exit(0)
+            err(f"Failed to remove shortcut: {e}")
+        
+        try:
+            subprocess.run(["rm", "-rf", FOLDER_PATH], check=True)
+            ok(f"Removed folder: {FOLDER_PATH}")
+        except Exception as e:
+            err(f"Failed to remove folder: {e}")
+        
+        ok("Uninstallation complete.")
 
 def set_channel(iface, channel):
     subprocess.run(["iw", iface, "set", "channel", str(channel)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
