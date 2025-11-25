@@ -37,7 +37,9 @@ def uninstall_script():
         except Exception as e:
             err(f"Failed to remove folder: {e}")
         
-        ok("Uninstallation complete.")
+        # Final check
+        if not os.path.exists(SHORTCUT_PATH) and not os.path.exists(FOLDER_PATH):
+            ok("Deauther-s uninstalled successfully.")
     else:
         warn("Deauther-s is not installed.")
     sys.exit(0)
