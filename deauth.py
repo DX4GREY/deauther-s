@@ -40,7 +40,7 @@ def uninstall_script():
         ok("Uninstallation complete.")
     else:
         warn("Deauther-s is not installed.")
-    return
+    sys.exit(0)
 
 def set_channel(iface, channel):
     subprocess.run(["iw", iface, "set", "channel", str(channel)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
