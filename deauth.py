@@ -49,8 +49,8 @@ def set_channel(iface, channel):
 
 def main():
     parser = argparse.ArgumentParser(description="Simple Deauth Tool by Dx4 and JonX")
+    parser.add_argument("-h", "--help", action="help", help="Show this help message")
     parser.add_argument("-i", "--iface", help="Wireless interface (ex: wlan0)")
-    # New feature beacon flood
     parser.add_argument("-b", "--beacon", action="store_true", help="Enable beacon flood mode")
     parser.add_argument("--cleanup", action="store_true", help="Cleanup temporary files and exit")
     parser.add_argument("--uninstall", action="store_true", help="Uninstall the deauther shortcut")
@@ -66,6 +66,10 @@ def main():
     if args.cleanup:
         cleanup_tmp_files()
         sys.exit(0)
+
+    if args.help:
+        parser.print_help()
+        return
 
     if not args.iface:
         parser.print_help()
