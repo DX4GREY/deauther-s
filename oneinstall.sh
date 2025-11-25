@@ -45,4 +45,7 @@ if [[ "$METHOD" == "copy" ]]; then
     rm -rf "$TMP_DIR"
 else
     echo -e "\033[1;36m[*]\033[0m Keeping folder (symlink mode)."
+    echo -e "\033[1;36m[*]\033[0m This folder is required for the symlink to function properly:"
+    echo -e "\033[1;36m[*]\033[0m $TMP_DIR"
+    echo -e "\033[1;36m[*]\033[0m You can edit the script directly here."
 fi
