@@ -8,6 +8,12 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# Check is valid installation directory
+if [[ ! -f deauth.py ]]; then
+    echo -e "\033[1;31m[!]\033[0m Please run this script from the root of the cloned repository."
+    exit 1
+fi
+
 # Required system dependencies
 REQUIRED_CMDS=("iw" "aircrack-ng" "ip" "mdk4" "xterm" "python3" "pip3")
 
@@ -37,7 +43,8 @@ if ! python3 -c "import colorama" &> /dev/null; then
 fi
 
 # Path to main Python script
-SCRIPT_PATH="$(realpath deauth.py)"
+FOLDER_PATH="$(pwd)"
+SCRIPT_PATH="$FOLDER_PATH/deauth.py"
 TARGET="/usr/local/bin/deauther-s"
 
 echo
@@ -55,7 +62,9 @@ case "$choice" in
         ;;
     2)
         echo -e "\033[1;34m[*]\033[0m Copying script to $TARGET"
-        install -m 755 "$SCRIPT_PATH" "$TARGET"
+        cp -r "$FOLDER_PATH" /usr/share/deauther-s
+        echo -e "\033[1;34m[*]\033[0m Setting up executable..."
+        ln -sf "/usr/share/deauther-s/deauth.py" "$TARGET"
         ;;
     *)
         echo -e "\033[1;31m[!]\033[0m Invalid choice. Aborting."

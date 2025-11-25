@@ -1,4 +1,4 @@
-## **DEAUTHER-s by Dx4 & JonX**
+# **DEAUTHER-s**
 
 A Python-based WiFi **Deauthentication Attack Tool** with automatic scanning, AP selection, and support for multiple attack engines.
 Runs inside `xterm` with interactive menus for easy usage.
@@ -66,14 +66,6 @@ sudo ./install.sh
 ```
 curl -sSL https://raw.githubusercontent.com/DX4GREY/deauther-s/master/oneinstall.sh -o /tmp/deauther-one.sh && sudo bash /tmp/deauther-one.sh && rm /tmp/deauther-one.sh
 ```
-
-Installer will:
-
-* Check and verify required commands
-* Copy main script to `/usr/local/bin/deauther-s`
-* Make it globally executable
-* Test environment compatibility
-
 ---
 
 ## 🕹️ **Usage**
@@ -84,31 +76,6 @@ Installer will:
 sudo deauther-s -i wlan0
 ```
 
-This will:
-
-1. Launch **airodump-ng** inside xterm
-2. Save CSV results
-3. Show a **list of detected APs**
-4. Ask you to choose a target
-5. Ask you to choose attack method (aireplay-ng or mdk4)
-6. Launch the attack
-
----
-
-## 🎯 **Attack Method Selection**
-
-You will be prompted with:
-
-```
------ Select Attack Method -----
-1. aireplay-ng (classic, stable)
-2. mdk4 (stronger, faster, more aggressive)
-```
-
-Choose **1** or **2** depending on your needs.
-
----
-
 ## ❌ **Uninstallation**
 
 To remove the installed shortcut:
@@ -117,7 +84,7 @@ To remove the installed shortcut:
 sudo deauther-s --uninstall
 ```
 
-This only removes `/usr/local/bin/deauther-s`
+This only removes 'deauther-s' resources
 (not the repository nor dependencies).
 
 ---
