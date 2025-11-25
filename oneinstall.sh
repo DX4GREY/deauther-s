@@ -24,15 +24,17 @@ echo -e "\033[1;34m[*]\033[0m Running installer..."
 
 # Jalankan installer
 INSTALL_PATH="/usr/local/bin/deauther-s"
+FOLDER_PATH=/usr/share/deauther-s
 bash install.sh
 
-# Deteksi apakah user memilih symlink atau copy
-if [[ -L $INSTALL_PATH ]]; then
-    METHOD="symlink"
-elif [[ -f $INSTALL_PATH ]]; then
+# Cek apakah FOLDER_PATH ada jika ada maka cek apakah deauther-s ada, jika duanya ada maka di anggap terinstall menggunakan copy
+# Jika salah FOLDER_PATH tidak ada sedangkan INSTALL_PATH ada maka di anggap terinstall menggunakan symlink
+if [[ -d "$FOLDER_PATH" && -f "$INSTALL_PATH" ]]; then
     METHOD="copy"
+elif [[ ! -d "$FOLDER_PATH" && -f "$INSTALL_PATH" ]]; then
+    METHOD="symlink"
 else
-    METHOD="unknown"
+    METHOD="not installed"
 fi
 
 echo -e "\033[1;34m[*]\033[0m Detected installation type: $METHOD"
