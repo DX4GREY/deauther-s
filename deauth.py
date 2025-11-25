@@ -50,7 +50,6 @@ def set_channel(iface, channel):
 def main():
     print_banner()
     parser = argparse.ArgumentParser(description="Simple Deauth Tool by Dx4 and JonX")
-    parser.add_argument("-h", "--help", action="help", help="Show this help message")
     parser.add_argument("-i", "--iface", help="Wireless interface (ex: wlan0)")
     parser.add_argument("-b", "--beacon", action="store_true", help="Enable beacon flood mode")
     parser.add_argument("--cleanup", action="store_true", help="Cleanup temporary files and exit")
