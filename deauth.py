@@ -38,6 +38,9 @@ def uninstall_script():
             err(f"Failed to remove folder: {e}")
         
         ok("Uninstallation complete.")
+    else:
+        warn("Deauther-s is not installed.")
+    return
 
 def set_channel(iface, channel):
     subprocess.run(["iw", iface, "set", "channel", str(channel)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
