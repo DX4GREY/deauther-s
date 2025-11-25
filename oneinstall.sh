@@ -1,4 +1,5 @@
 #!/bin/bash
+clear
 
 echo -e "\033[1;32m[*]\033[0m Running Deauther One-Line Installer..."
 
