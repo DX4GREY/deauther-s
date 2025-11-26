@@ -71,52 +71,79 @@ def parse_airodump_csv(csv_file):
 def interactive_choose(aps):
     print(f"\n{Fore.CYAN}{Style.BRIGHT}----- Detected Access Points -----{Style.NORMAL}")
 
-    # Hitung panjang SSID terpanjang
-    max_ssid_len = max(len(ssid) if ssid else 3 for _, _, _, ssid in aps)
-    max_ssid_len = max(max_ssid_len, 4)  # minimal panjang kolom
+    # Hitung lebar SSID berdasarkan teks RAW (tanpa warna)
+    def raw_len(text):
+        return len(text) if text else 3
+
+    max_ssid_len = max(raw_len(ssid) for _, _, _, ssid in aps)
+    max_ssid_len = max(max_ssid_len, 4)
 
     # Lebar kolom
     col_no = 4
     col_ssid = max_ssid_len + 2
-    col_ch = 6
-    col_rssi = 8
+    col_ch = 4
+    col_rssi = 6
     col_bssid = 20
 
+    # Fungsi helper untuk print sel warna TAPI tetap align
+    def color_cell(colored_text, raw_text, width):
+        padding = width - len(raw_text)
+        return colored_text + " " * padding + Style.RESET_ALL
+
     # Garis atas
-    print("┌" + "─" * col_no + "┬" + "─" * col_ssid + "┬" + "─" * col_ch + "┬" +
-        "─" * col_rssi + "┬" + "─" * col_bssid + "┐")
+    print(
+        "┌" + "─" * col_no +
+        "┬" + "─" * col_ssid +
+        "┬" + "─" * col_ch +
+        "┬" + "─" * col_rssi +
+        "┬" + "─" * col_bssid + "┐"
+    )
 
     # Header
     print(
         "│"
-        f"{Fore.GREEN}{'No':<{col_no}}{Style.RESET_ALL}│"
-        f"{Fore.GREEN}{'SSID':<{col_ssid}}{Style.RESET_ALL}│"
-        f"{Fore.GREEN}{'CH':<{col_ch}}{Style.RESET_ALL}│"
-        f"{Fore.GREEN}{'RSSI':<{col_rssi}}{Style.RESET_ALL}│"
-        f"{Fore.GREEN}{'BSSID':<{col_bssid}}{Style.RESET_ALL}│"
+        f"{'No':<{col_no}}│"
+        f"{'SSID':<{col_ssid}}│"
+        f"{'CH':<{col_ch}}│"
+        f"{'RSSI':<{col_rssi}}│"
+        f"{'BSSID':<{col_bssid}}│"
     )
 
-    # Garis tengah
-    print("├" + "─" * col_no + "┼" + "─" * col_ssid + "┼" + "─" * col_ch + "┼" +
-        "─" * col_rssi + "┼" + "─" * col_bssid + "┤")
+    # Garis pemisah
+    print(
+        "├" + "─" * col_no +
+        "┼" + "─" * col_ssid +
+        "┼" + "─" * col_ch +
+        "┼" + "─" * col_rssi +
+        "┼" + "─" * col_bssid + "┤"
+    )
 
-    # Isi Tabel
+    # Isi tabel
     for i, (bssid, ch, rssi, ssid) in enumerate(aps, start=1):
-        ssid_display = ssid if ssid else f"{Fore.RED}Err{Fore.WHITE}"
+
+        raw_ssid = ssid if ssid else "Err"
+        colored_ssid = (
+            f"{Fore.WHITE}{ssid}"
+            if ssid else f"{Fore.RED}Err"
+        )
 
         print(
             "│"
             f"{Fore.YELLOW}{i:<{col_no}}{Style.RESET_ALL}│"
-            f"{Fore.WHITE}{ssid_display:<{col_ssid}}{Style.RESET_ALL}│"
+            f"{color_cell(colored_ssid, raw_ssid, col_ssid)}│"
             f"{Fore.CYAN}{ch:<{col_ch}}{Style.RESET_ALL}│"
             f"{Fore.CYAN}{rssi:<{col_rssi}}{Style.RESET_ALL}│"
             f"{Fore.LIGHTCYAN_EX}{bssid:<{col_bssid}}{Style.RESET_ALL}│"
         )
 
     # Garis bawah
-    print("└" + "─" * col_no + "┴" + "─" * col_ssid + "┴" + "─" * col_ch + "┴" +
-        "─" * col_rssi + "┴" + "─" * col_bssid + "┘")
-
+    print(
+        "└" + "─" * col_no +
+        "┴" + "─" * col_ssid +
+        "┴" + "─" * col_ch +
+        "┴" + "─" * col_rssi +
+        "┴" + "─" * col_bssid + "┘"
+    )
     choice = input_field("Select target: ")
 
     try:
