@@ -2,8 +2,8 @@
 import os
 import sys
 import argparse
-import subprocess
-from logging import err, ok, warn
+import subprocess, time
+from logging import err, ok, warn, info
 from colorama import Fore, Style, init
 from utils import check_superuser, check_dependencies, validate_interface, cleanup_tmp_files
 from attacks import start_deauth, start_beacon_flood
@@ -88,4 +88,15 @@ def main():
         start_beacon_flood(args.iface)
 
 if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print()
+        info("Exiting...")
+        info("Cleaning up temporary files", end="", flush=True)
+        for _ in range(3):
+            time.sleep(0.2)
+            print(".", end="", flush=True)
+        cleanup_tmp_files()
+        sys.exit(0)
     main()

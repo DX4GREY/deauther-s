@@ -1,17 +1,22 @@
 import colorama
-from colorama import Fore
+from colorama import Fore, Style
 colorama.init(autoreset=True)
-def ok(msg):
-    print(f"{Fore.GREEN}[+] {Fore.WHITE}{msg}")
 
-def err(msg):
-    print(f"{Fore.RED}[!] {Fore.WHITE}{msg}")
+def ok(*msg, **kwargs):
+    print(Fore.GREEN + "[+] " + Style.RESET_ALL, end="")
+    print(*msg, **kwargs)
 
-def warn(msg):
-    print(f"{Fore.YELLOW}[!] {Fore.WHITE}{msg}")
+def err(*msg, **kwargs):
+    print(Fore.RED + "[!] " + Style.RESET_ALL, end="")
+    print(*msg, **kwargs)
 
-def info(msg):
-    print(f"{Fore.CYAN}[*] {Fore.WHITE}{msg}")
+def warn(*msg, **kwargs):
+    print(Fore.YELLOW + "[!] " + Style.RESET_ALL, end="")
+    print(*msg, **kwargs)
 
-def input_field(msg):
-    return input(f"{Fore.GREEN}[?] {Fore.WHITE}{msg}").strip()
+def info(*msg, **kwargs):
+    print(Fore.CYAN + "[*] " + Style.RESET_ALL, end="")
+    print(*msg, **kwargs)
+
+def input_field(msg, **kwargs):
+    return input(Fore.GREEN + "[?] " + Style.RESET_ALL + msg, **kwargs).strip()
