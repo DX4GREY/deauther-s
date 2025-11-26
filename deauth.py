@@ -22,7 +22,6 @@ def print_banner():
 """ + Style.RESET_ALL)
 
 def uninstall_script():
-    print_banner()
     # Uninstall all SHORTCUT_PATH and FOLDER_PATH
     if os.path.exists(SHORTCUT_PATH) and os.path.exists(FOLDER_PATH):
         try:
