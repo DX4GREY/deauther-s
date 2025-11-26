@@ -97,6 +97,6 @@ if __name__ == "__main__":
         for _ in range(3):
             time.sleep(0.2)
             print(".", end="", flush=True)
+        print()
         cleanup_tmp_files()
         sys.exit(0)
-    main()
