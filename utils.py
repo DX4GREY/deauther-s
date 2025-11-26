@@ -12,14 +12,32 @@ def check_superuser():
         sys.exit(1)
     return True
 
-def cleanup_tmp_files():
-    tmp_files = [f for f in os.listdir("/tmp") if f.startswith("deauther")]
-    for f in tmp_files:
+def cleanup_tmp_files(prefix="deauther"):
+    tmp_path = "/tmp"
+
+    try:
+        entries = os.listdir(tmp_path)
+    except Exception as e:
+        err(f"Failed to list /tmp: {e}")
+        return
+
+    for name in entries:
+        if not name.startswith(prefix):
+            continue
+
+        path = os.path.join(tmp_path, name)
+
         try:
-            ok(f"removeing temporary file: /tmp/{f}")
-            os.remove(os.path.join("/tmp", f))
-        except:
-            pass
+            if os.path.isdir(path):
+                ok(f"Removing temporary folder: {path}")
+                shutil.rmtree(path)
+            else:
+                ok(f"Removing temporary file: {path}")
+                os.remove(path)
+
+        except Exception as e:
+            err(f"Failed to remove {path}: {e}")
+
 def validate_interface(iface):
     try:
         subprocess.run(["iw", iface, "info"], check=True, 
