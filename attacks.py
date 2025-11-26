@@ -16,7 +16,7 @@ def start_beacon_flood(iface):
     print(f"{Fore.YELLOW}4. {Fore.RESET}Use SSIDs from a wordlist file")
     print()
 
-    match input_field("Choose SSID option (1-4): "):
+    match input_field("Choose SSID option: "):
         case "1":
             ssid = input_field("Enter SSID to flood: ")
             ssid = f"-n '{ssid}'"
@@ -92,7 +92,7 @@ def start_deauth(bssid, channel, iface):
     print(f"{Fore.YELLOW}3. {Fore.RESET}Authentication Flood (mdk4 only, may crash some APs)") 
     print()
     
-    choice = input_field("Choose attack method (1-2): ")
+    choice = input_field("Choose attack method: ")
 
     if choice == "1":
         tool = "aireplay"
