@@ -71,11 +71,21 @@ def parse_airodump_csv(csv_file):
 def interactive_choose(aps):
     print(f"\n{Fore.CYAN}{Style.BRIGHT}----- Detected Access Points -----{Style.NORMAL}")
 
-    for i, (bssid, ch, rssi, ssid) in enumerate(aps):
-        print(f"{Fore.YELLOW}{i+1}. {Fore.WHITE}{ssid if ssid else f"{Fore.RED}Err"}\t"
-              f"{Fore.GREEN}CH:{ch}\t"
-              f"{Fore.CYAN}RSSI:{rssi}\t"
-              f"{Fore.CYAN}BSSID:{bssid}")
+    # Header table
+    print(f"{Fore.GREEN}{'No':<4}{'SSID':<30}{'CH':<6}{'RSSI':<8}{'BSSID':<20}{Style.RESET_ALL}")
+    print("-" * 80)
+
+    for i, (bssid, ch, rssi, ssid) in enumerate(aps, start=1):
+        ssid_display = ssid if ssid else f"{Fore.RED}Err{Fore.WHITE}"
+        
+        print(
+            f"{Fore.YELLOW}{i:<4}"
+            f"{Fore.WHITE}{ssid_display:<30}"
+            f"{Fore.GREEN}{ch:<6}"
+            f"{Fore.CYAN}{rssi:<8}"
+            f"{Fore.LIGHTCYAN_EX}{bssid:<20}"
+        )
+
 
     print()
     choice = input_field("Select target: ")
